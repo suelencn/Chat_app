@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class AuthForm extends StatefulWidget {
   final void Function(
@@ -8,8 +9,9 @@ class AuthForm extends StatefulWidget {
     bool isLogin,
     BuildContext ctx,
   ) submitFn;
+  bool isLoading;
 
-  AuthForm(this.submitFn);
+  AuthForm(this.submitFn, this.isLoading);
 
   @override
   State<AuthForm> createState() => _AuthFormState();
@@ -41,6 +43,7 @@ class _AuthFormState extends State<AuthForm> {
 
   @override
   Widget build(BuildContext context) {
+    Firebase.initializeApp();
     return Center(
       child: Card(
         margin: const EdgeInsets.all(20),
@@ -98,21 +101,24 @@ class _AuthFormState extends State<AuthForm> {
                   const SizedBox(
                     height: 12,
                   ),
-                  RaisedButton(
-                    onPressed: _trySubmit,
-                    child: Text(_isLogin ? 'Login' : 'Signup'),
-                  ),
-                  FlatButton(
-                    textColor: Theme.of(context).primaryColor,
-                    onPressed: () {
-                      setState(() {
-                        _isLogin = !_isLogin;
-                      });
-                    },
-                    child: Text(_isLogin
-                        ? 'Create new account'
-                        : 'I already have an account'),
-                  )
+                  if (widget.isLoading) CircularProgressIndicator(),
+                  if (!widget.isLoading)
+                    RaisedButton(
+                      onPressed: _trySubmit,
+                      child: Text(_isLogin ? 'Login' : 'Signup'),
+                    ),
+                  if (!widget.isLoading)
+                    FlatButton(
+                      textColor: Theme.of(context).primaryColor,
+                      onPressed: () {
+                        setState(() {
+                          _isLogin = !_isLogin;
+                        });
+                      },
+                      child: Text(_isLogin
+                          ? 'Create new account'
+                          : 'I already have an account'),
+                    )
                 ],
               ),
             ),
