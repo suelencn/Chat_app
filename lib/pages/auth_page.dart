@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 import 'package:chat_app/widgets/auth/authForm.dart';
 
@@ -19,6 +21,7 @@ class _AuthPageState extends State<AuthPage> {
     String email,
     String password,
     String username,
+    File image,
     bool isLogin,
     BuildContext ctx,
   ) async {
@@ -37,12 +40,20 @@ class _AuthPageState extends State<AuthPage> {
           email: email,
           password: password,
         );
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(authCredential.user?.uid)
-            .set({
-          'username': username,
-          'email': email,
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('user_image')
+            .child('${authCredential.user!.uid}.jpg');
+        ref.putFile(image).whenComplete(() async {
+          final imageUrl = await ref.getDownloadURL();
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(authCredential.user?.uid)
+              .set({
+            'username': username,
+            'email': email,
+            'image_url': imageUrl,
+          });
         });
       }
     } on PlatformException catch (error) {
